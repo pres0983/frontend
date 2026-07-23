@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getStatus } from '../api'
+import { getMyStatus } from '../api'
+import { useAuth } from '../AuthContext'
 
 function Card({ label, value, accent }) {
   return (
@@ -18,18 +19,19 @@ function Card({ label, value, accent }) {
 }
 
 export default function Dashboard() {
+  const { token } = useAuth()
   const [status, setStatus] = useState(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    getStatus().then(setStatus).catch(() => setError(true))
-  }, [])
+    getMyStatus(token).then(setStatus).catch(() => setError(true))
+  }, [token])
 
   return (
     <div>
       <h1 style={{ fontSize: 22, marginBottom: 4 }}>Dashboard</h1>
       <p style={{ color: 'var(--text-dim)', marginTop: 0, marginBottom: 24, fontSize: 14 }}>
-        Live status of your connected bot, pulled from the backend engine.
+        Live status of your connected bot.
       </p>
 
       {error && (
@@ -37,15 +39,15 @@ export default function Dashboard() {
           background: 'var(--bg-panel)', border: '1px solid var(--down)', borderRadius: 10,
           padding: 16, marginBottom: 20, color: 'var(--down)', fontSize: 14
         }}>
-          Can't reach the backend yet. Set VITE_API_URL to your Render URL, or run the backend locally on port 8000.
+          Can't reach the backend, or you haven't connected an exchange yet — check Settings.
         </div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 28 }}>
-        <Card label="Bot Mode" value={status?.mode || '—'} accent="var(--accent)" />
-        <Card label="Active Pairs" value={status?.active_pairs?.length ?? '—'} />
-        <Card label="Last Ping" value={status?.last_ping ? new Date(status.last_ping).toLocaleTimeString() : '—'} />
-        <Card label="Last Scan" value={status?.last_scan_date || '—'} />
+        <Card label="Connected" value={status?.connected ? 'Yes' : 'No'} />
+        <Card label="Mode" value={status?.mode || '—'} accent="var(--accent)" />
+        <Card label="Bot" value={status?.active ? 'Running' : 'Stopped'} accent={status?.active ? 'var(--up)' : 'var(--text-dim)'} />
+        <Card label="Active Pairs" value={status?.active_pairs?.length ?? 0} />
       </div>
 
       <div style={{
@@ -63,7 +65,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>No scan has run yet — the nightly scan populates this at midnight UTC.</p>
+          <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>No scan has run yet, or the bot isn't active.</p>
         )}
       </div>
     </div>

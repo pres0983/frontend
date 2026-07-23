@@ -1,23 +1,31 @@
 import { useState } from 'react'
 import { saveExchangeSettings, toggleBot } from '../api'
+import { useAuth } from '../AuthContext'
 
 export default function Settings() {
+  const { token } = useAuth()
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
   const [mode, setMode] = useState('demo')
   const [botActive, setBotActive] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSave = async (e) => {
     e.preventDefault()
-    await saveExchangeSettings({ apiKey, apiSecret, mode })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+    setError('')
+    try {
+      await saveExchangeSettings(token, { apiKey, apiSecret, mode })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   const handleToggleBot = async () => {
     const next = !botActive
-    await toggleBot(next)
+    await toggleBot(token, next)
     setBotActive(next)
   }
 
@@ -80,6 +88,7 @@ export default function Settings() {
           Save connection
         </button>
         {saved && <p style={{ color: 'var(--up)', fontSize: 13, marginTop: 10 }}>Saved.</p>}
+        {error && <p style={{ color: 'var(--down)', fontSize: 13, marginTop: 10 }}>{error}</p>}
       </form>
 
       <div style={{

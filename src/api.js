@@ -1,8 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-export async function getStatus() {
-  const res = await fetch(`${API_URL}/status`)
-  return res.json()
+function authHeaders(token) {
+  return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
 }
 
 export async function ping() {
@@ -10,13 +9,46 @@ export async function ping() {
   return res.json()
 }
 
-// Stubs — wire these to real backend endpoints once auth + DB are added
-export async function saveExchangeSettings({ apiKey, apiSecret, mode }) {
-  console.log('TODO: POST to backend', { apiKey: '***', mode })
-  return { ok: true }
+export async function getMyStatus(token) {
+  const res = await fetch(`${API_URL}/settings/status`, { headers: authHeaders(token) })
+  if (!res.ok) throw new Error('Failed to fetch status')
+  return res.json()
 }
 
-export async function toggleBot(active) {
-  console.log('TODO: POST bot toggle to backend', active)
-  return { ok: true, active }
+export async function saveExchangeSettings(token, { apiKey, apiSecret, mode }) {
+  const res = await fetch(`${API_URL}/settings/exchange`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ api_key: apiKey, api_secret: apiSecret, mode }),
+  })
+  if (!res.ok) throw new Error((await res.json()).detail || 'Failed to save settings')
+  return res.json()
+}
+
+export async function toggleBot(token, active) {
+  const res = await fetch(`${API_URL}/settings/bot-toggle?active=${active}`, {
+    method: 'POST',
+    headers: authHeaders(token),
+  })
+  if (!res.ok) throw new Error((await res.json()).detail || 'Failed to toggle bot')
+  return res.json()
+}
+
+export async function getMyTrades(token) {
+  const res = await fetch(`${API_URL}/trades`, { headers: authHeaders(token) })
+  if (!res.ok) throw new Error('Failed to fetch trades')
+  return res.json()
+}
+
+export async function getAdminUsers(token) {
+  const res = await fetch(`${API_URL}/admin/users`, { headers: authHeaders(token) })
+  if (!res.ok) throw new Error('Failed to fetch users')
+  return res.json()
+}
+
+export async function adminForceStop(token, userId) {
+  const res = await fetch(`${API_URL}/admin/users/${userId}/force-stop`, {
+    method: 'POST', headers: authHeaders(token),
+  })
+  return res.json()
 }
