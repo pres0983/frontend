@@ -14,11 +14,13 @@ export default function Settings() {
   const handleSave = async (e) => {
     e.preventDefault()
     setError('')
+    setSaved(false)
     try {
       await saveExchangeSettings(token, { apiKey, apiSecret, mode })
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
     } catch (err) {
+      setSaved(false)
       setError(err.message)
     }
   }
