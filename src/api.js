@@ -15,6 +15,12 @@ export async function getMyStatus(token) {
   return res.json()
 }
 
+export async function getBalance(token) {
+  const res = await fetch(`${API_URL}/settings/balance`, { headers: authHeaders(token) })
+  if (!res.ok) return null  // not connected yet, or Bybit call failed — dashboard shows '—' instead of erroring
+  return res.json()
+}
+
 export async function saveExchangeSettings(token, { apiKey, apiSecret, mode }) {
   const res = await fetch(`${API_URL}/settings/exchange`, {
     method: 'POST',
