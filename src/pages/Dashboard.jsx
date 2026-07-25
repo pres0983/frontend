@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getMyStatus } from '../api'
+import { getMyStatus, getBalance } from '../api'
 import { useAuth } from '../AuthContext'
 
 function Card({ label, value, accent }) {
@@ -21,10 +21,12 @@ function Card({ label, value, accent }) {
 export default function Dashboard() {
   const { token } = useAuth()
   const [status, setStatus] = useState(null)
+  const [balance, setBalance] = useState(null)
   const [error, setError] = useState(false)
 
   useEffect(() => {
     getMyStatus(token).then(setStatus).catch(() => setError(true))
+    getBalance(token).then(setBalance)
   }, [token])
 
   return (
@@ -44,6 +46,11 @@ export default function Dashboard() {
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 28 }}>
+        <Card
+          label="Account Balance"
+          value={balance ? `$${Number(balance.balance_usdt).toFixed(2)}` : '—'}
+          accent="var(--up)"
+        />
         <Card label="Connected" value={status?.connected ? 'Yes' : 'No'} />
         <Card label="Mode" value={status?.mode || '—'} accent="var(--accent)" />
         <Card label="Bot" value={status?.active ? 'Running' : 'Stopped'} accent={status?.active ? 'var(--up)' : 'var(--text-dim)'} />
