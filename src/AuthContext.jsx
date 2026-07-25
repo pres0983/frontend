@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from 'react'
 
 const AuthContext = createContext(null)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = 'https://backend-pcba.onrender.com'
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('token'))
